@@ -44,9 +44,12 @@ use futures::prelude::*;
 use libp2p::swarm::{Swarm, SwarmEvent};
 use libp2p::{identity, ping, Multiaddr, PeerId};
 use std::error::Error;
+use std::env;
+use std::process;
 
 #[async_std::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = env::args().collect();
     let local_key = identity::Keypair::generate_ed25519();
     let local_peer_id = PeerId::from(local_key.public());
     println!("Local peer id: {:?}", local_peer_id);
@@ -61,17 +64,55 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let behaviour = ping::Behaviour::new(ping::Config::new().with_keep_alive(true));
 
     let mut swarm = Swarm::new(transport, behaviour, local_peer_id);
+    
+    let port: u16; // default port
+    let remote: Multiaddr;
 
-    // Tell the swarm to listen on all interfaces and a random, OS-assigned
-    // port.
-    swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
+    match args.len() {
+        // no arguments
+        1 => {
+            println!("Try passing some arguments!");
+            process::exit(1);
+        },
+        // 1 argument
+        2 => {
+            let num = &args[1];
+            port = match num.parse() {
+                Ok(n) => n,
+                Err(_) => {
+                    println!("error: first argument not an integer");
+                    process::exit(2);
+                },
+            };
+            let mut address: String = "/ip4/0.0.0.0/tcp/".to_owned();
+            address.push_str(&port.to_string());
+            swarm.listen_on(address.parse()?)?;
 
-    // Dial the peer identified by the multi-address given as the second
-    // command-line argument, if any.
-    if let Some(addr) = std::env::args().nth(1) {
-        let remote: Multiaddr = addr.parse()?;
-        swarm.dial(remote)?;
-        println!("Dialed {}", addr)
+        },
+        // 2 arguments
+        3 => {
+            let num = &args[1];
+            port = match num.parse() {
+                Ok(n) => n,
+                Err(_) => {
+                    println!("error: first argument not an integer");
+                    process::exit(3);
+                },
+            };
+            let mut address: String = "/ip4/0.0.0.0/tcp/".to_owned();
+            address.push_str(&port.to_string());
+            swarm.listen_on(address.parse()?)?;
+
+            let addr = &args[2];
+            remote = addr.parse()?;
+            swarm.dial(remote)?;
+            println!("Dialed {}", addr);
+        },
+        // more than 2 arguments
+        _ => {
+            println!("Too many arguments!");
+            process::exit(4);
+        },
     }
 
     loop {
