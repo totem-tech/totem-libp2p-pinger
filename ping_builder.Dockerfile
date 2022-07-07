@@ -2,11 +2,15 @@
 # -t totemlive/totem-libp2p-ping:local \
 # -f ping_builder.Dockerfile .
 
-FROM debian:stretch-slim as builder
+FROM docker.io/library/ubuntu:20.04 as builder
 
 LABEL description="Multistage Docker image for Totem LibP2P Ping Test" \
 	totem.live.image.type="builder" \
-	totem.live.image.authors="chris.dcosta@totemaccounting.com" \
+	totem.live.image.authors="chris.dcosta@totemaccounting.com"
+
+# metadata
+ARG VCS_REF
+ARG BUILD_DATE
 
 # show backtraces
 ENV RUST_BACKTRACE 1
@@ -34,14 +38,14 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 # apt cleanup
 		apt-get autoremove -y && \
 		apt-get clean && \
-		find /var/lib/apt/lists/ -type f -not -name lock -delete;
+		find /var/lib/apt/lists/ -type f -not -name lock -delete; \
 
 # rust compiler command to build binary 
 RUN cargo build --release --example ping
 
 # This is the 2nd stage: a very small image where we copy the Totem LibP2P Pinger binary."
-# FROM docker.io/library/ubuntu:20.04
-FROM debian:stretch-slim
+FROM docker.io/library/ubuntu:20.04
+# FROM debian:stretch-slim
 
 LABEL description="Multistage Docker image for Totem LibP2P Ping Test" \
 	totem.live.image.type="container" \
