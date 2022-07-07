@@ -8,10 +8,6 @@ LABEL description="Multistage Docker image for Totem LibP2P Ping Test" \
 	totem.live.image.type="builder" \
 	totem.live.image.authors="chris.dcosta@totemaccounting.com" \
 
-# metadata
-ARG VCS_REF
-ARG BUILD_DATE
-
 # show backtraces
 ENV RUST_BACKTRACE 1
 
