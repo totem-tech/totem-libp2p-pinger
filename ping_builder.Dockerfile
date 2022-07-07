@@ -57,3 +57,27 @@ RUN useradd -m -u 1000 -U -s /bin/sh -d /totem-libp2p-pinger totemadmin
 USER totemadmin
 
 CMD /usr/local/bin/ping
+
+
+# Starting the first peer
+
+# docker run \
+# -it \
+# -p 0.0.0.0:8333:8333 \
+# --rm \
+# --name totem-libp2p-pinger \
+# totemlive/totem-libp2p-ping:local \
+# ping \
+# 8333
+
+# Starting the second peer
+
+# docker run \
+# -it \
+# -p 0.0.0.0:9333:9333 \
+# --rm \
+# --name totem-libp2p-pinger \
+# totemlive/totem-libp2p-ping:local \
+# ping \
+# 9333 \
+# /ip4/<peer-1-IP-address>/tcp/<peer-1-port>
